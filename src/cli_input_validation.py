@@ -1,0 +1,255 @@
+"""
+CLI definition and argument validation for the puzzle framework.
+
+Defines the two subcommands used via `python -m src.main`:
+
+  - generate: create a puzzle dataset (agent counts, boundary types, puzzle
+    narratives, queried agent index, special names, classic vs. random vs.
+    extreme-random observation setup, optional solution-approach section).
+  - test: run the configured models on an existing dataset and write
+    *_pre_process.csv / *_post_process.csv result files.
+
+build_arg_parser constructs the parser; validate_args (and its per-command
+helpers) enforces constraints argparse can't express - non-empty and
+deduplicated lists (deduplication mutates args in place), agent_index within
+range of the smallest agent count, special names unsupported for the muddy
+children narrative, mutual exclusion of the two random-observation modes,
+and existence/creation of input and output paths.
+"""
+
+
+import argparse
+from pathlib import Path
+from src.constants import (LOWER_BOUND_TYPE, UPPER_BOUND_TYPE, MUDDY_CHILDREN_PUZZLE, AT_LEAST_CLEAN_TYPE,
+                           NOT_LESS_THAN_MUDDY_TYPE)
+from src.puzzles import PUZZLE_CONFIGS
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    """
+    Build and return the CLI argument parser for dataset generation and testing.
+    Subcommands:
+        - generate: create puzzles JSONL dataset.
+        - test: run models on an existing dataset.
+    """
+    parser = argparse.ArgumentParser(
+        description="Epistemic logic puzzles dataset generator and model tester."
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # --- generate subcommand --- #
+    generate_command(subparsers)
+
+    # --- test subcommand --- #
+    test_command(subparsers)
+
+    return parser
+
+
+def generate_command(subparsers):
+    """
+    Adds the 'generate' subcommand and its arguments to the parser.
+    Args:
+        subparsers: The subparsers object to add the command to.
+    """
+    gen = subparsers.add_parser("generate", help="Generate puzzles dataset")
+    gen.add_argument(
+        "--number_of_agents",
+        type=int,
+        nargs="+",
+        default=[2],
+        help="List of agent numbers to generate problems for",
+    )
+    gen.add_argument(
+        "--boundary_types",
+        type=str,
+        nargs="+",
+        default=[LOWER_BOUND_TYPE],
+        choices=[LOWER_BOUND_TYPE, UPPER_BOUND_TYPE, AT_LEAST_CLEAN_TYPE, NOT_LESS_THAN_MUDDY_TYPE],
+        help="Which boundary types to allow.",
+    )
+    gen.add_argument(
+        "--dataset_path",
+        type=str,
+        default="muddy_children_puzzles_dataset.jsonl",
+        help="Path to save the generated dataset in.",
+    )
+    gen.add_argument(
+        "--puzzles",
+        type=str,
+        nargs="+",
+        default=[MUDDY_CHILDREN_PUZZLE],
+        choices=PUZZLE_CONFIGS.keys(),
+        help="Which puzzle contexts to generate."
+    )
+    gen.add_argument(
+        "--agent_index",
+        type=int,
+        default=0,
+        help="The index of the agent to generate problems for. If not set, uses the default agent 0.",
+    )
+    gen.add_argument(
+        "--special_name",
+        action="store_true",
+        help="If set, generates special named versions depending on the agent state. "
+             "Not supported in the muddy children puzzle."
+    )
+    gen.add_argument(
+        "--random_observation",
+        action="store_true",
+        help="If set, generates a random observation matrix for each set of prompts, instead of the standard matrix where "
+             "each agent sees everyone else but not themselves. Can't be set if random_observation_extreme is set.",
+    )
+    gen.add_argument(
+        "--random_observation_extreme",
+        action="store_true",
+        help="If set, generates random observation matrices where the agent in question can't see themselves. "
+             "We keep only puzzles where the agent acquires knowledge at some reasoning round j >= 3. Also, we eliminate"
+             "puzzles with an immediate bound (at most 0 or at least n). Can't be set if random_observation is set.",
+    )
+    gen.add_argument(
+        "--insert_solution_approach",
+        action="store_true",
+        help="If set, generates puzzles with an additional 'solution approach' section. This section guides the model to"
+             "create a Kripke model based solver, and generate the correct response using it.",
+    )
+
+
+def test_command(subparsers):
+    """
+    Adds the 'test' subcommand and its arguments to the parser.
+    Args:
+        subparsers: The subparsers object to add the command to.
+    """
+    test = subparsers.add_parser("test", help="Run models on a given puzzles dataset")
+    test.add_argument(
+        "--dataset_path",
+        type=str,
+        default="muddy_children_puzzles_dataset.jsonl",
+        help="Path to the dataset JSONL file generated by 'generate'.",
+    )
+    test.add_argument(
+        "--output_prefix",
+        type=str,
+        default="test_results_old",
+        help="Base path/name for output CSV files (e.g., 'results/run1'). Code will append _pre_process.csv and _post_process.csv."
+    )
+
+
+def validate_args(args: argparse.Namespace) -> None:
+    """
+    Validate parsed CLI arguments.
+    Raises:
+        ValueError: If any argument constraints are violated for the selected subcommand.
+    """
+    if args.command == "generate":
+        validate_generate_args(args)
+
+    elif args.command == "test":
+        validate_test_args(args)
+
+
+def validate_generate_args(args: argparse.Namespace) -> None:
+    """
+    Validates logic and integrity for 'generate' command arguments.
+    Modifies args in-place (deduplicates lists).
+    Args:
+        args: Parsed arguments namespace.
+    Raises:
+        ValueError: If lists are empty, contain invalid values, or directory creation fails.
+    """
+    # --- number_of_agents ---
+    ns = args.number_of_agents
+    if not ns:
+        raise ValueError("--number_of_agents resolved to an empty list.")
+
+    bad_ns = [n for n in ns if n < 2]
+    if bad_ns:
+        raise ValueError(
+            f"--number_of_agents must contain only integers >= 2. Invalid: {sorted(set(bad_ns))}"
+        )
+    args.number_of_agents = list(dict.fromkeys(ns))
+
+    # --- boundary_types ---
+    bts = args.boundary_types
+    if not bts:
+        raise ValueError("--boundary_types resolved to an empty list.")
+
+    allowed = {LOWER_BOUND_TYPE, UPPER_BOUND_TYPE, AT_LEAST_CLEAN_TYPE, NOT_LESS_THAN_MUDDY_TYPE}
+    bad_bts = [b for b in bts if b not in allowed]
+    if bad_bts:
+        raise ValueError(
+            f"--boundary_types can only include: {sorted(allowed)}. Invalid: {sorted(set(bad_bts))}"
+        )
+    args.boundary_types = list(dict.fromkeys(bts))
+
+    # --- puzzles ---
+    sts = args.puzzles
+    if not sts:
+        raise ValueError("--puzzles resolved to an empty list.")
+
+    allowed_puzzles = PUZZLE_CONFIGS.keys()
+    bad_puzzles = [p for p in sts if p not in allowed_puzzles]
+    if bad_puzzles:
+        raise ValueError(f"Invalid puzzles found: {bad_puzzles}. Allowed: {allowed_puzzles}")
+
+    args.puzzles = list(dict.fromkeys(sts))
+
+    # --- agent_index ---
+    min_agents = min(args.number_of_agents)
+
+    if args.agent_index < 0:
+        raise ValueError(f"--agent_index cannot be negative. Received: {args.agent_index}")
+
+    if args.agent_index >= min_agents:
+        raise ValueError(
+            f"--agent_index ({args.agent_index}) must be less than the number of agents. "
+            f"The smallest agent count provided is {min_agents}, so the max index allowed is {min_agents - 1}."
+        )
+
+    # --- special_name ---
+    if args.special_name and MUDDY_CHILDREN_PUZZLE in args.puzzles:
+        raise ValueError("--special_name is not supported when generating the Muddy Children puzzle.")
+
+    # --- random observations ---
+    if args.random_observation and args.random_observation_extreme:
+        raise ValueError("Can set only one of random_observation and random_observation_extreme.")
+
+    # --- dataset_path validation ---
+    out_path = Path(args.dataset_path)
+    if out_path.is_dir():
+        raise ValueError(f"Dataset path '{out_path}' is a directory. Please specify a file name.")
+
+    if not out_path.parent.exists():
+        try:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise ValueError(f"Cannot create directory for dataset path '{out_path.parent}': {e}")
+
+
+def validate_test_args(args: argparse.Namespace) -> None:
+    """
+    Validates logic and integrity for 'test' command arguments.
+    Checks if input file exists and if output directory is writable.
+    Args:
+        args: Parsed arguments namespace.
+    Raises:
+        FileNotFoundError: If input dataset does not exist.
+        ValueError: If input is not a file or output directory cannot be created.
+    """
+    # --- input_file ---
+    input_path = Path(args.dataset_path)
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input dataset not found at: {input_path}")
+    if not input_path.is_file():
+        raise ValueError(f"Input path is not a file: {input_path}")
+
+    # --- output_file ---
+    output_prefix = Path(args.output_prefix)
+    output_dir = output_prefix.parent
+
+    if not output_dir.exists():
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise ValueError(f"Cannot create output directory '{output_dir}': {e}")
