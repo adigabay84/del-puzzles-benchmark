@@ -72,7 +72,8 @@ rather than reasoning from first principles.
 │       ├── README.md
 │       ├── quadrant_files.py                            # QUARTERS: file manifest for the 4 benchmark quadrants
 │       ├── compute_quadrant_accuracy.py                 # per-quadrant accuracy heatmap figure
-│       └── compute_quadrant_macro_f1.py                 # per-quadrant macro-F1 table (text + LaTeX)
+│       ├── compute_quadrant_macro_f1.py                 # per-quadrant macro-F1 table (text + LaTeX)
+│       └── compute_model_significance.py                # pairwise model significance testing (p-values)
 └── test_results/
     ├── symmetric_inference/<puzzle_name>/               # generated datasets + per-model eval CSVs
     └── asymmetric_inference/<puzzle_name>/              # generated datasets + per-model eval CSVs
@@ -222,6 +223,7 @@ asymmetric inference) via the manifest in `src/analysis/quadrant_files.py`:
 ```bash
 python -m src.analysis.compute_quadrant_accuracy     # Graphs/combined_models_accuracy.png
 python -m src.analysis.compute_quadrant_macro_f1     # per-quadrant macro-F1 table (stdout, + LaTeX)
+python -m src.analysis.compute_model_significance    # Graphs/model_significance_pvalues.csv (+ LaTeX table on stdout)
 ```
 
 <p align="center">
@@ -236,4 +238,5 @@ own result files.
 Standalone image assets used in the accompanying paper:
 the benchmark-quadrant diagram (`Main Figure.png`), the walked-through 2-agent example
 (`public_announcement.png`, `round_1.png`, `round_2.png`), the results heatmap
-(`combined_models_accuracy.png`), and rendered example prompts for each narrative (`25.png`&ndash;`39.png`).
+(`combined_models_accuracy.png`), a shortened example prompt (`short_prompt.png`), and rendered
+example prompts for each narrative (`26.png`&ndash;`39.png`).

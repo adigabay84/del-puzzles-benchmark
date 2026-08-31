@@ -11,7 +11,7 @@ For the internals of each subpackage, see:
   build and re-skin the experiment datasets to different narratives.
 - [`utils/README.md`](utils/README.md) &mdash; dataset post-processing and result-CSV writing.
 - [`analysis/README.md`](analysis/README.md) &mdash; turning per-model result CSVs into the
-  benchmark's accuracy/F1 figures and tables.
+  benchmark's accuracy/F1 figures and tables, plus pairwise model significance testing.
 
 ## Files in this directory
 
