@@ -46,9 +46,20 @@ The core generator. Key entry points:
   `generate_premise` / `generate_hypothesis` text builders.
 - **`build_all_possible_problems(...)`** &mdash; sweeps every valid combination of agent count,
   muddy count, boundary type/value, and round number for the requested narratives, generating one
-  `build_problem` call per valid combination. For the random-observation settings, samples matrices
-  via `get_valid_scenarios` (20 candidate matrices per combination when
+  `build_problem` call per valid combination. Combinations where the announcement would be false
+  given the actual muddy count (`lower`-type `boundary_value` greater than `muddy_children_number`,
+  or `upper`-type less than it) are skipped up front, before `build_problem` is even called &mdash;
+  this is a silent `continue` in the sweep, not an error, since the sweep tries every `boundary_value`
+  in `0..children_number` regardless of the actual muddy count. For the random-observation settings,
+  samples matrices via `get_valid_scenarios` (20 candidate matrices per combination when
   `random_observation_extreme` is set, to find ones satisfying its extra constraints).
+
+Regardless of the sweep's own skip, the same consistency check is also enforced directly inside
+`internal_solver.get_solver_label` via `boundary_utils.validate_boundary_consistency` (raises
+`ValueError`), so it's impossible to bypass by calling `build_problem` &mdash; or `get_solver_label`
+itself &mdash; directly with an inconsistent `boundary_value`/`muddy_children_number` pair, without
+going through the sweep. `src/utils/solver_runner_with_display.py`'s standalone
+`get_knowledge_history` carries the same guard.
 - **`pipeline(problems, random_observation_extreme)`** &mdash; converts the list of problem dicts to
   a `DataFrame`, deduplicates on `(premise, hypothesis)` when `random_observation_extreme` is set,
   and normalizes whitespace/terminal punctuation in the generated text.

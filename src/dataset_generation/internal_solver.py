@@ -11,7 +11,7 @@ under either observation setup:
 """
 
 
-from src.dataset_generation.boundary_utils import get_logic_type_and_value
+from src.dataset_generation.boundary_utils import get_logic_type_and_value, validate_boundary_consistency
 from src.constants import LOWER_BOUND_TYPE
 from src.dataset_generation.standard_observation_text_generator import first_round_with_some_knowledge
 
@@ -33,8 +33,12 @@ def get_solver_label(children_number, muddy_children_number, round_number, bound
     Returns:
         int: 1 if the child is labeled as knowing by `round_number`, else 0.
     Raises:
-        ValueError: If `use_random_observation=True` and `round_number > len(history)`.
+        ValueError: If `boundary_value`/`boundary_type` is inconsistent with `muddy_children_number`
+            (the announcement would be false), or if `use_random_observation=True` and
+            `round_number > len(history)`.
     """
+    validate_boundary_consistency(boundary_type, boundary_value, muddy_children_number, children_number)
+
     if use_random_observation:  #case 1: random observation matrix
         #safety check
         if round_number > len(history):

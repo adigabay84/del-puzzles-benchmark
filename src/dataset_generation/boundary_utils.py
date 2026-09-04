@@ -54,6 +54,33 @@ def is_bound_informative(boundary_type: str, boundary_value: int, children_numbe
     return False
 
 
+def validate_boundary_consistency(boundary_type: str, boundary_value: int, muddy_children_number: int,
+                                  children_number: int) -> None:
+    """
+    Raise ValueError if the announced boundary would be false given the actual muddy count
+    (e.g. announcing "at least 5 muddy" when only 4 children are actually muddy).
+    Args:
+        boundary_type: the boundary type.
+        boundary_value: the boundary value.
+        muddy_children_number: the actual number of muddy children in this scenario.
+        children_number: the number of children.
+    Raises:
+        ValueError: if the boundary is inconsistent with muddy_children_number.
+    """
+    logic_type, logic_val = get_logic_type_and_value(boundary_type, boundary_value, children_number)
+
+    if logic_type == LOWER_BOUND_TYPE and logic_val > muddy_children_number:
+        raise ValueError(
+            f"Inconsistent boundary: {boundary_type!r}={boundary_value} announces at least "
+            f"{logic_val} muddy, but muddy_children_number={muddy_children_number}."
+        )
+    if logic_type == UPPER_BOUND_TYPE and logic_val < muddy_children_number:
+        raise ValueError(
+            f"Inconsistent boundary: {boundary_type!r}={boundary_value} announces at most "
+            f"{logic_val} muddy, but muddy_children_number={muddy_children_number}."
+        )
+
+
 def choose_bound_prefix(boundary_type: str) -> str:
     """
     Returns the prefix corresponding to the given boundary type.

@@ -10,6 +10,7 @@ lower bound 8) and prints the full round-by-round trace and final history.
 import numpy as np
 from numpy import ndarray
 from src.constants import LOWER_BOUND_TYPE, NOT_LESS_THAN_MUDDY_TYPE, UPPER_BOUND_TYPE, AT_LEAST_CLEAN_TYPE
+from src.dataset_generation.boundary_utils import validate_boundary_consistency
 
 
 def find_knowers(number_of_children: int, observation_matrix: ndarray, real_world: ndarray, worlds: ndarray):
@@ -29,6 +30,8 @@ def find_knowers(number_of_children: int, observation_matrix: ndarray, real_worl
 
 def get_knowledge_history(number_of_children: int, observation_matrix: list[list[int]], real_world: ndarray,
                           boundary_value: int, boundary_type: str):
+    validate_boundary_consistency(boundary_type, boundary_value, int(real_world.sum()), number_of_children)
+
     observation_matrix = np.array(observation_matrix)
     worlds = np.array([list(np.binary_repr(i, width=number_of_children)) for i in range(2 ** number_of_children)], dtype=int)
 
