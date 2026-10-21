@@ -1,5 +1,13 @@
 # Beyond Memorization: Distinguishing Between Pattern-Based and Epistemic Reasoning in LLMs Using Epistemic Puzzles
 
+<p align="center">
+  <b>Adi Gabay, Gabriel Stanovsky, Liat Peterfreund</b>
+  <br>
+  <b>Accepted to EMNLP 2026 Main Conference</b>
+  <br><br>
+  <a href="https://arxiv.org/abs/2603.21350"><img src="https://img.shields.io/badge/Paper%20on%20arXiv-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white" alt="Paper on arXiv"></a>
+</p>
+
 A two-dimensional benchmark of DEL-style epistemic puzzles, varying narrative familiarity and inference complexity, 
 for distinguishing pattern-based from epistemic reasoning in LLMs.
 
