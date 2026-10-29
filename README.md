@@ -5,7 +5,8 @@
   <br>
   <b>Accepted to EMNLP 2026 Main Conference</b>
   <br><br>
-  <a href="https://arxiv.org/abs/2603.21350"><img src="https://img.shields.io/badge/Paper%20on%20arXiv-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white" alt="Paper on arXiv"></a>
+  <a href="https://aclanthology.org/2026.emnlp-main.2119/"><img src="https://img.shields.io/badge/ACL-ED1C24?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2OCA0NiI%2BPHBhdGggZD0iTSA0MS45Nzc1NTMsLTIuODQyMTcwOWUtMDE0IEMgNDEuOTc3NTUzLDEuNzYxNzggNDEuOTc3NTUzLDEuNDQyMTEgNDEuOTc3NTUzLDMuMDE1OCBMIDcuNDg2OTA1NCwzLjAxNTggTCAwLDMuMDE1OCBMIDAsMTAuNTAwNzkgTCAwLDM4LjQ3ODY3IEwgMCw0NiBMIDcuNDg2OTA1NCw0NiBMIDQ5LjUwMDgwMiw0NiBMIDU2Ljk4NzcwOCw0NiBMIDY4LDQ2IEwgNjgsMzAuOTkzNjggTCA1Ni45ODc3MDgsMzAuOTkzNjggTCA1Ni45ODc3MDgsMTAuNTAwNzkgTCA1Ni45ODc3MDgsMy4wMTU4IEMgNTYuOTg3NzA4LDEuNDQyMTEgNTYuOTg3NzA4LDEuNzYxNzggNTYuOTg3NzA4LC0yLjg0MjE3MDllLTAxNCBMIDQxLjk3NzU1MywtMi44NDIxNzA5ZS0wMTQgeiBNIDE1LjAxMDE1NSwxNy45ODU3OCBMIDQxLjk3NzU1MywxNy45ODU3OCBMIDQxLjk3NzU1MywzMC45OTM2OCBMIDE1LjAxMDE1NSwzMC45OTM2OCBMIDE1LjAxMDE1NSwxNy45ODU3OCB6ICIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIi8%2BPC9zdmc%2B" alt="ACL"></a>
+  <a href="https://arxiv.org/abs/2603.21350"><img src="https://img.shields.io/badge/arXiv-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white" alt="arXiv"></a>
 </p>
 
 A two-dimensional benchmark of DEL-style epistemic puzzles, varying narrative familiarity and inference complexity, 
